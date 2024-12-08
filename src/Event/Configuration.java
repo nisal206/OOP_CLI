@@ -83,4 +83,3 @@ public class Configuration {
         return maxTicketCapacity;
     }
 }
-
