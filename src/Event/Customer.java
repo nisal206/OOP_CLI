@@ -2,20 +2,20 @@ package Event;
 
 public class Customer implements Runnable {
     private final TicketPool pool;
-    private final int retrievalIntervalSeconds;
+    private final int retrievalRate;
     private final String customerId;
 
-    public Customer(TicketPool pool, int retrievalIntervalSeconds, String customerId) {
+    public Customer(TicketPool pool, int retrievalRate, String customerId) {
         this.pool = pool;
-        this.retrievalIntervalSeconds = retrievalIntervalSeconds;
+        this.retrievalRate = retrievalRate;
         this.customerId = customerId;
     }
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-            pool.retrieveTicket(customerId); // Retrieve a ticket from the pool
-            sleep(retrievalIntervalSeconds * 1000); // Wait for the retrieval interval
+        while (!Thread.currentThread().isInterrupted()) {  // Check if the thread is interrupted
+            pool.retrieveTicket(customerId);  // Retrieve a ticket from the pool
+            sleep(retrievalRate * 1000);  // Wait for the retrieval interval
         }
     }
 
@@ -23,7 +23,7 @@ public class Customer implements Runnable {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();  // Properly handle interruption
         }
     }
 }
