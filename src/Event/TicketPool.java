@@ -10,6 +10,7 @@ public class TicketPool {
     private final Queue<String> tickets = new LinkedList<>();
     private final int maxCapacity, totalTicketsLimit;
     private int totalTicketsAdded = 0;
+    private int totalTicketsRetrieved = 0; // Track tickets retrieved
     private final String eventName;
 
     public TicketPool(int maxCapacity, int totalTicketsLimit, String eventName) {
@@ -40,8 +41,15 @@ public class TicketPool {
             waitSafely();
         }
         String ticketId = tickets.poll();
+        totalTicketsRetrieved++;
         System.out.println(customerId + " retrieved " + ticketId + " from Event: " + eventName +
                 ". Tickets Remaining: " + tickets.size());
+
+        if (totalTicketsAdded >= totalTicketsLimit && totalTicketsRetrieved >= totalTicketsLimit) {
+            System.out.println("\u001B[32m" + "\n\t***** All tickets processed. Exiting system... *****" + "\u001B[0m");
+            System.exit(0);
+        }
+
         notifyAll();
     }
 

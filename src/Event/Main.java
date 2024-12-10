@@ -13,7 +13,7 @@ public class Main {
 
         File file = new File("Configure.txt");
         if (file.exists()) {
-            System.out.print("\nDo you want to load previous configuration (Enter 'Yes' or 'No'): ");
+            System.out.print("\nDo you want to load the previous configuration (Enter 'Yes' or 'No'): ");
             String answer = input.next().trim().toLowerCase();
             if ("yes".equals(answer)) {
                 config.read();
@@ -26,54 +26,56 @@ public class Main {
 
         // Initialize the ticket pool
         TicketPool pool = new TicketPool(config.getMaxTicketCapacity(), config.getTotalTickets(), config.getEventName());
-        List<Thread> threads = new ArrayList<>();
+        List<Thread> vendorThreads = new ArrayList<>();
+        List<Thread> customerThreads = new ArrayList<>();
 
-        // Create vendor threads
-        for (int i = 0; i < config.getVendorCount(); i++) {
-            threads.add(new Thread(new Vendor(pool, config.getTicketReleaseRate(), "Vendor-" + (i + 1))));
-        }
-
-        // Create customer threads
-        for (int i = 0; i < config.getCustomerCount(); i++) {
-            threads.add(new Thread(new Customer(pool, config.getCustomerRetrievalRate(), "Customer-" + (i + 1))));
-        }
-
-        // Start the system when 'S' is pressed and stop when 'E' is pressed
+        int ch = 0;
         while (true) {
-            System.out.print("\nEnter 'S' to start ticket operations or 'E' to stop and end the program: ");
-            String command = input.next().trim().toLowerCase();
+
+            if (ch == 0) {
+                System.out.print("\nEnter 'S' to start ticket operations or 'E' to stop vendors/customers: ");
+            }            String command = input.next().trim().toLowerCase();
 
             if ("s".equals(command)) {
-                // Start all threads
-                threads.forEach(Thread::start);
-                System.out.println("\u001B[32m" + "\n\t***** Ticket system started. *****" + "\u001B[0m");
-
-                // Start a new thread to listen for the 'E' command to stop the system
-                new Thread(() -> {
-                    while (true) {
-                        String stopCommand = input.next().trim().toLowerCase();
-                        if ("e".equals(stopCommand)) {
-                            stopSystem(threads);
-                            break;  // Exit after stopping the system
-                        }
+                if (vendorThreads.isEmpty() && customerThreads.isEmpty()) {
+                    // Create and start vendor threads
+                    for (int i = 0; i < config.getVendorCount(); i++) {
+                        Thread vendorThread = new Thread(new Vendor(pool, config.getTicketReleaseRate(), "Vendor-" + (i + 1)));
+                        vendorThreads.add(vendorThread);
+                        vendorThread.start();
                     }
-                }).start();  // Start the listener thread for stopping the system
 
-                break;  // Exit after starting the system
+                    // Create and start customer threads
+                    for (int i = 0; i < config.getCustomerCount(); i++) {
+                        Thread customerThread = new Thread(new Customer(pool, config.getCustomerRetrievalRate(), "Customer-" + (i + 1)));
+                        customerThreads.add(customerThread);
+                        customerThread.start();
+                    }
+
+                    System.out.println("\u001B[32m" + "\n\t***** Ticket system started. *****\n" + "\u001B[0m");
+                    ch = 1;
+                } else {
+                    System.out.println("\u001B[31m" + "\nThe system is already running!" + "\u001B[0m");
+                }
             } else if ("e".equals(command)) {
-                stopSystem(threads);
-                break;  // Exit the while loop after stopping the system
+                // Stop only vendor and customer threads
+                stopThreads(vendorThreads, "Vendor");
+                stopThreads(customerThreads, "Customer");
+                vendorThreads.clear();
+                customerThreads.clear();
+                System.out.println("\u001B[32m" + "\n\t***** Ticket system stopped. *****" + "\u001B[0m");
+                ch = 0;
             } else {
                 System.out.println("\u001B[31m" + "\nInvalid command. Enter 'S' to start or 'E' to stop." + "\u001B[0m");
             }
         }
+
     }
 
-    // Stop all threads immediately
-    private static void stopSystem(List<Thread> threads) {
-        System.out.println("\u001B[32m" + "\n\t***** Stopping ticket system... *****" + "\u001B[0m");
+    // Stop a specific list of threads
+    private static void stopThreads(List<Thread> threads, String threadType) {
         for (Thread thread : threads) {
-            thread.interrupt();  // Interrupt each thread
+            thread.interrupt(); // Interrupt each thread
         }
     }
 }
