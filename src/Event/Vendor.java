@@ -1,9 +1,9 @@
 package Event;
 
 public class Vendor implements Runnable {
-    public static TicketPool pool;
-    private final int releaseRate;
-    private final String vendorId;
+    public static TicketPool pool;// Shared ticket pool where tickets are added by vendors
+    private final int releaseRate; // Time interval between adding tickets (in seconds)
+    private final String vendorId;// Identifier for this vendor
 
     public Vendor(int releaseRate, String vendorId) {
         this.releaseRate = releaseRate;
@@ -12,17 +12,15 @@ public class Vendor implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {  // Check if the thread is interrupted
-            pool.addTickets(vendorId);  // Add a ticket to the pool
-            sleep(releaseRate * 1000);  // Wait for the release interval
-        }
-    }
-
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();  // Properly handle interruption
+        while (!Thread.currentThread().isInterrupted()) { // Keep running until the thread is stopped
+            pool.addTickets(vendorId); // Add a ticket to the pool
+            try {
+                Thread.sleep(releaseRate*1000);// Wait for the specified time before adding another ticket
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();// Stop the thread if interrupted
+            }
         }
     }
 }
+
+
