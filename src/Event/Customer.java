@@ -1,12 +1,11 @@
 package Event;
 
 public class Customer implements Runnable {
-    private final TicketPool pool;
+    public static TicketPool pool;
     private final int retrievalRate;
     private final String customerId;
 
-    public Customer(TicketPool pool, int retrievalRate, String customerId) {
-        this.pool = pool;
+    public Customer(int retrievalRate, String customerId) {
         this.retrievalRate = retrievalRate;
         this.customerId = customerId;
     }

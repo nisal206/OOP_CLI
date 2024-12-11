@@ -1,12 +1,11 @@
 package Event;
 
 public class Vendor implements Runnable {
-    private final TicketPool pool;
+    public static TicketPool pool;
     private final int releaseRate;
     private final String vendorId;
 
-    public Vendor(TicketPool pool, int releaseRate, String vendorId) {
-        this.pool = pool;
+    public Vendor(int releaseRate, String vendorId) {
         this.releaseRate = releaseRate;
         this.vendorId = vendorId;
     }
